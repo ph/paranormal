@@ -1,25 +1,22 @@
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Cell {
-    character: char,
-}
-
-impl Cell {
-    pub fn new(character: char) -> Self {
-        Self { character }
-    }
+pub enum Cell {
+    Empty,
+    Filled { character: char },
 }
 
 #[derive(Debug, Clone)]
 pub struct Framebuffer {
     width: u16,
     height: u16,
-    buf: Vec<Option<Cell>>,
+    buf: Vec<Cell>,
 }
 
 impl Framebuffer {
     pub fn new(width: u16, height: u16) -> Self {
+        const EMPTY: Cell = Cell::Empty;
+
         let capacity = width * height;
-        let buf = vec![None; capacity.into()];
+        let buf = vec![EMPTY; capacity.into()];
 
         Self { width, height, buf }
     }
@@ -32,16 +29,16 @@ impl Framebuffer {
         assert!(x < self.width, "X is out of bound of {}", self.width);
         assert!(y < self.height, "Y is out of bounf of {}", self.height);
 
-        self.buf.insert(self.idx(x, y), Some(cell))
+        self.buf.insert(self.idx(x, y), cell)
     }
 
-    pub fn get(&self, x: u16, y: u16) -> Option<&Cell> {
+    pub fn get(&self, x: u16, y: u16) -> &Cell {
         assert!(x < self.width, "X is out of bound of {}", self.width);
         assert!(y < self.height, "Y is out of bounf of {}", self.height);
 
         match self.buf.get(self.idx(x, y)) {
-            Some(o) => o.as_ref(),
-            None => None,
+            Some(cell) => cell,
+            None => &Cell::Empty,
         }
     }
 
@@ -86,7 +83,7 @@ impl<'a> FramebufferIterator<'a> {
 }
 
 impl<'a> Iterator for FramebufferIterator<'a> {
-    type Item = ((u16, u16), Option<&'a Cell>);
+    type Item = ((u16, u16), &'a Cell);
 
     fn next(&mut self) -> Option<Self::Item> {
         for x in 0..self.fb.width() {
@@ -106,9 +103,9 @@ mod test {
     #[test]
     fn set_and_get() {
         let mut fb = Framebuffer::new(3, 4);
-        let cell = Cell { character: 'a' };
+        let cell = Cell::Filled { character: 'a' };
         fb.set(1, 1, cell.clone());
-        let c = fb.get(1, 1).unwrap();
+        let c = fb.get(1, 1);
         assert_eq!(cell, *c);
     }
 
@@ -121,13 +118,13 @@ mod test {
     #[test]
     fn clear() {
         let mut fb = Framebuffer::new(3, 4);
-        let cell = Cell { character: 'a' };
+        let cell = Cell::Filled { character: 'a' };
         fb.set(1, 1, cell.clone());
-        let c = fb.get(1, 1).unwrap();
+        let c = fb.get(1, 1);
         assert_eq!(cell, *c);
 
         fb.clear();
-        assert!(fb.get(1, 2).is_none());
+        assert_eq!(*fb.get(1, 2), Cell::Empty);
     }
 
     #[test]
