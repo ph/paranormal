@@ -69,6 +69,34 @@ impl Framebuffer {
     pub fn height(&self) -> u16 {
         self.height
     }
+
+    pub fn iter(&self) -> FramebufferIterator {
+        FramebufferIterator::new(self)
+    }
+}
+
+struct FramebufferIterator<'a> {
+    fb: &'a Framebuffer,
+}
+
+impl<'a> FramebufferIterator<'a> {
+    fn new(fb: &'a Framebuffer) -> Self {
+        Self { fb }
+    }
+}
+
+impl<'a> Iterator for FramebufferIterator<'a> {
+    type Item = ((u16, u16), Option<&'a Cell>);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        for x in 0..self.fb.width() {
+            for y in 0..self.fb.height() {
+                let cell = self.fb.get(x, y);
+                return Some(((x, y), cell));
+            }
+        }
+        None
+    }
 }
 
 #[cfg(test)]
@@ -100,5 +128,17 @@ mod test {
 
         fb.clear();
         assert!(fb.get(1, 2).is_none());
+    }
+
+    #[test]
+    fn height() {
+        let fb = Framebuffer::new(3, 4);
+        assert_eq!(fb.height(), 4);
+    }
+
+    #[test]
+    fn width() {
+        let fb = Framebuffer::new(3, 4);
+        assert_eq!(fb.width(), 3);
     }
 }
