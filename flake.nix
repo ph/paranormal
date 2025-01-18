@@ -1,5 +1,5 @@
 {
-  description = "A devShell example";
+  description = "paranormal - ain't afraid of no ghost";
 
   inputs = {
     nixpkgs.url      = "github:NixOS/nixpkgs/nixos-unstable";
@@ -20,7 +20,7 @@
         devShell = pkgs.mkShell {
           buildInputs =
             [
-              (rustVersion.override { extensions = [ "rust-src" ]; })
+              (rustVersion.override { extensions = [ "rust-src" "rustfmt" "clippy" ]; })
               pkgs.rust-analyzer
               pkgs.protobuf
               pkgs.openssl
