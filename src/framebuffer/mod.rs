@@ -165,18 +165,6 @@ mod test {
             ((1, 1), &cell_2),
         ];
 
-        // left: [
-        //     ((0, 0), Filled { character: 'X' }),
-        //     ((1, 0), Empty),
-        //     ((0, 1), Empty)
-        // ]
-        //     right: [
-        // 	((0, 0), Filled { character: 'X' }),
-        // 	((0, 1), Empty),
-        // 	((1, 0), Empty),
-        // 	((1, 1), Filled { character: 'Y' })
-        //     ]
-
         assert_eq!(fb.iter().collect::<Vec<_>>(), expected);
     }
 }
