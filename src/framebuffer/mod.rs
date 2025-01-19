@@ -72,13 +72,15 @@ impl Framebuffer {
     }
 }
 
-struct FramebufferIterator<'a> {
+pub struct FramebufferIterator<'a> {
     fb: &'a Framebuffer,
+    x: u16,
+    y: u16,
 }
 
 impl<'a> FramebufferIterator<'a> {
     fn new(fb: &'a Framebuffer) -> Self {
-        Self { fb }
+        Self { fb: fb, x: 0, y: 0 }
     }
 }
 
@@ -86,13 +88,20 @@ impl<'a> Iterator for FramebufferIterator<'a> {
     type Item = ((u16, u16), &'a Cell);
 
     fn next(&mut self) -> Option<Self::Item> {
-        for x in 0..self.fb.width() {
-            for y in 0..self.fb.height() {
-                let cell = self.fb.get(x, y);
-                return Some(((x, y), cell));
-            }
+        if self.y >= self.fb.width() {
+            self.y = 0;
+            self.x += 1;
         }
-        None
+
+        if self.x >= self.fb.height() {
+            return None;
+        }
+
+        let cell = ((self.x, self.y), self.fb.get(self.x, self.y));
+
+        self.y += 1;
+
+        Some(cell)
     }
 }
 
@@ -137,5 +146,37 @@ mod test {
     fn width() {
         let fb = Framebuffer::new(3, 4);
         assert_eq!(fb.width(), 3);
+    }
+
+    #[test]
+    fn iterator() {
+        let mut fb = Framebuffer::new(2, 2);
+
+        let cell_1 = Cell::Filled { character: 'X' };
+        let cell_2 = Cell::Filled { character: 'Y' };
+
+        fb.set(0, 0, cell_1.clone());
+        fb.set(1, 1, cell_2.clone());
+
+        let expected = vec![
+            ((0, 0), &cell_1),
+            ((0, 1), &Cell::Empty),
+            ((1, 0), &Cell::Empty),
+            ((1, 1), &cell_2),
+        ];
+
+        // left: [
+        //     ((0, 0), Filled { character: 'X' }),
+        //     ((1, 0), Empty),
+        //     ((0, 1), Empty)
+        // ]
+        //     right: [
+        // 	((0, 0), Filled { character: 'X' }),
+        // 	((0, 1), Empty),
+        // 	((1, 0), Empty),
+        // 	((1, 1), Filled { character: 'Y' })
+        //     ]
+
+        assert_eq!(fb.iter().collect::<Vec<_>>(), expected);
     }
 }
