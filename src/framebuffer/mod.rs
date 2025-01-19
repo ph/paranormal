@@ -1,3 +1,5 @@
+mod diff;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Cell {
     Empty,
