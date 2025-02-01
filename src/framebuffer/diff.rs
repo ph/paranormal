@@ -1,5 +1,3 @@
-use tracing::trace;
-
 use super::{Cell, Framebuffer};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -81,7 +79,6 @@ pub fn compare(a: &Framebuffer, b: &Framebuffer) -> Changesets {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::framebuffer::render;
 
     #[test]
     fn compare_same_framebuffer() {
@@ -97,7 +94,7 @@ mod test {
 
     #[test]
     fn compare_new_to_added_items() {
-        let mut fb_a = Framebuffer::new(2, 2);
+        let fb_a = Framebuffer::new(2, 2);
         let mut fb_b = Framebuffer::new(2, 2);
 
         fb_b.set(0, 0, Cell::Filled { character: 'P' });
@@ -127,23 +124,23 @@ mod test {
         fb_b.set(0, 0, Cell::Filled { character: '!' }); // up
         fb_b.set(1, 3, Cell::Filled { character: '1' }); // add
 
-        println!("fb back a {:?}", fb_a.buf);
-        println!("fb back b {:?}", fb_b.buf);
-
         let diff = compare(&fb_a, &fb_b);
 
-        // diff.iter().for_each(|d| println!("{:?}", d));
-        assert_eq!(diff.len(), 3);
-
-        // (0, 0), (1, 0),
-        // (0, 1), (1, 1),
-        // (0, 2), (1, 2),
-
-        // (0, 0), (1, 0)
-        // (0, 1), (1, 1)
-        // (0, 2), (1, 2)
-
-        // Note(ph): I believe there is an issue with the iterator implementation or set/get.
-        // Compare the two inner vec buffers.
+        assert_eq!(
+            diff,
+            vec![
+                Changeset::Update {
+                    x: 0,
+                    y: 0,
+                    cell: Cell::Filled { character: '!' }
+                },
+                Changeset::Remove { x: 1, y: 1 },
+                Changeset::Add {
+                    x: 1,
+                    y: 3,
+                    cell: Cell::Filled { character: '1' }
+                }
+            ],
+        );
     }
 }
