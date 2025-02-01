@@ -27,7 +27,7 @@ pub enum Cell {
 pub struct Framebuffer {
     width: u16,
     height: u16,
-    buf: Vec<Cell>,
+    pub buf: Vec<Cell>,
 }
 
 impl Framebuffer {
@@ -41,7 +41,7 @@ impl Framebuffer {
     }
 
     fn idx(&self, x: u16, y: u16) -> usize {
-        (x * self.width + y).into()
+        (y * self.width + x).into()
     }
 
     pub fn set(&mut self, x: u16, y: u16, cell: Cell) {
@@ -228,6 +228,31 @@ mod test {
         ];
 
         assert_eq!(fb.iter().collect::<Vec<_>>(), expected);
+
+        let mut fb_a = Framebuffer::new(2, 6);
+        fb_a.set(0, 0, Cell::Filled { character: '!' });
+        fb_a.set(1, 3, Cell::Filled { character: '1' });
+
+        let cells = fb_a.iter().collect::<Vec<_>>();
+
+        assert_eq!(cells.len(), 12);
+        assert_eq!(
+            cells,
+            vec![
+                ((0, 0), &Cell::Filled { character: '!' }),
+                ((1, 0), &Cell::Empty),
+                ((0, 1), &Cell::Empty),
+                ((1, 1), &Cell::Empty),
+                ((0, 2), &Cell::Empty),
+                ((1, 2), &Cell::Empty),
+                ((0, 3), &Cell::Empty),
+                ((1, 3), &Cell::Filled { character: '1' }),
+                ((0, 4), &Cell::Empty),
+                ((1, 4), &Cell::Empty),
+                ((0, 5), &Cell::Empty),
+                ((1, 5), &Cell::Empty),
+            ]
+        );
     }
 
     #[test]
@@ -239,7 +264,6 @@ mod test {
         let mut buf = String::new();
 
         render(&fb, &mut buf).expect("should be able to write to the buffer");
-
         assert_eq!(buf, String::from("X \n Y\n"));
     }
 }

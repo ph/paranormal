@@ -1,3 +1,5 @@
+use tracing::trace;
+
 use super::{Cell, Framebuffer};
 
 #[derive(Clone, Debug, PartialEq)]
@@ -20,6 +22,9 @@ impl std::fmt::Display for Changeset {
 type Changesets = Vec<Changeset>;
 
 pub fn compare(a: &Framebuffer, b: &Framebuffer) -> Changesets {
+    assert!(a.width() == b.width(), "width doesn't match");
+    assert!(a.height() == b.height(), "height doesn't match");
+
     let mut changesets = Vec::new();
 
     a.iter()
@@ -28,10 +33,19 @@ pub fn compare(a: &Framebuffer, b: &Framebuffer) -> Changesets {
             assert!(x_a == x_b);
             assert!(y_a == y_b);
 
+            println!(
+                "a: {:?}, cell_a: {:?} --  b: {:?}, cell_b: {:?}",
+                (x_a, y_a),
+                (x_b, y_b),
+                cell_a,
+                cell_b
+            );
+
             use Changeset::*;
 
             match (cell_a, cell_b) {
                 (Cell::Empty, Cell::Filled { .. }) => {
+                    println!("add");
                     let change = Add {
                         x: x_a,
                         y: y_a,
@@ -41,11 +55,13 @@ pub fn compare(a: &Framebuffer, b: &Framebuffer) -> Changesets {
                     changesets.push(change);
                 }
                 (Cell::Filled { .. }, Cell::Empty) => {
+                    println!("empty");
                     let change = Remove { x: x_a, y: y_a };
                     changesets.push(change);
                 }
                 (Cell::Filled { .. }, Cell::Filled { .. }) => {
                     if cell_a != cell_b {
+                        println!("update");
                         let change = Update {
                             x: x_a,
                             y: y_a,
@@ -58,7 +74,8 @@ pub fn compare(a: &Framebuffer, b: &Framebuffer) -> Changesets {
                 (Cell::Empty, Cell::Empty) => {}
             };
         });
-    Vec::new()
+
+    changesets
 }
 
 #[cfg(test)]
@@ -75,25 +92,58 @@ mod test {
 
         let diff = compare(&fb, &fb.clone());
 
-        // let mut buf = String::new();
-        // render(&fb, &mut buf).expect("ok");
-
-        // assert_eq!(buf, "");
-
         assert_eq!(diff.len(), 0, "raw diff {:?}", diff);
     }
 
-    // fn compare_changed_framebuffer() {
-    //     let mut fb_a = Framebuffer::new(2, 4);
+    #[test]
+    fn compare_new_to_added_items() {
+        let mut fb_a = Framebuffer::new(2, 2);
+        let mut fb_b = Framebuffer::new(2, 2);
 
-    //     fb_a.set(2, 3, Cell::Filled { character: 'P' });
-    //     fb_a.set(2, 2, Cell::Filled { character: 'H' });
+        fb_b.set(0, 0, Cell::Filled { character: 'P' });
+        fb_b.set(0, 1, Cell::Filled { character: 'H' });
 
-    //     let mut fb_b = Framebuffer::new(2, 4);
+        let diff = compare(&fb_a, &fb_b);
 
-    //     fb_b.set(2, 2, Cell::Filled { character: '!' });
-    //     fb_b.set(0, 2, Cell::Filled { character: 'A' });
+        assert_eq!(diff.len(), 2);
+    }
 
-    //     assert_eq!(compare(fb_a, fb_b).len(), 3);
-    // }
+    #[test]
+    #[should_panic(expected = "height doesn't match")]
+    fn cant_compare_different_size_framebuffer() {
+        let fb_a = Framebuffer::new(2, 4);
+        let fb_b = Framebuffer::new(2, 5);
+
+        compare(&fb_a, &fb_b);
+    }
+
+    #[test]
+    fn compare_changed_framebuffer() {
+        let mut fb_a = Framebuffer::new(2, 6);
+        fb_a.set(0, 0, Cell::Filled { character: 'P' });
+        fb_a.set(1, 1, Cell::Filled { character: 'o' }); // remove
+
+        let mut fb_b = Framebuffer::new(2, 6);
+        fb_b.set(0, 0, Cell::Filled { character: '!' }); // up
+        fb_b.set(1, 3, Cell::Filled { character: '1' }); // add
+
+        println!("fb back a {:?}", fb_a.buf);
+        println!("fb back b {:?}", fb_b.buf);
+
+        let diff = compare(&fb_a, &fb_b);
+
+        // diff.iter().for_each(|d| println!("{:?}", d));
+        assert_eq!(diff.len(), 3);
+
+        // (0, 0), (1, 0),
+        // (0, 1), (1, 1),
+        // (0, 2), (1, 2),
+
+        // (0, 0), (1, 0)
+        // (0, 1), (1, 1)
+        // (0, 2), (1, 2)
+
+        // Note(ph): I believe there is an issue with the iterator implementation or set/get.
+        // Compare the two inner vec buffers.
+    }
 }
