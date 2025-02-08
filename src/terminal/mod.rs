@@ -4,7 +4,7 @@ use std::{
     os::fd::{AsRawFd, IntoRawFd},
 };
 
-use libc::{ioctl, winsize, TIOCGWINSZ};
+use libc::{TIOCGWINSZ, ioctl, winsize};
 
 static TTY: &str = "/dev/tty";
 

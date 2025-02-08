@@ -176,7 +176,7 @@ pub fn render<W: Write>(fb: &Framebuffer, out: &mut W) -> Result<(), Framebuffer
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::terminal::{bg, fg, Color::*};
+    use crate::terminal::{Color::*, bg, fg};
 
     #[test]
     fn set_and_get() {
@@ -254,82 +254,57 @@ mod test {
         assert_eq!(fb.iter().collect::<Vec<_>>(), expected);
 
         let mut fb_a = Framebuffer::new(2, 6);
-        fb_a.set(
-            0,
-            0,
-            Cell::Filled {
-                character: '!',
-                foreground: fg(Green),
-                background: bg(Red),
-            },
-        );
-        fb_a.set(
-            1,
-            3,
-            Cell::Filled {
-                character: '1',
-                foreground: fg(Green),
-                background: bg(Red),
-            },
-        );
+        fb_a.set(0, 0, Cell::Filled {
+            character: '!',
+            foreground: fg(Green),
+            background: bg(Red),
+        });
+        fb_a.set(1, 3, Cell::Filled {
+            character: '1',
+            foreground: fg(Green),
+            background: bg(Red),
+        });
 
         let cells = fb_a.iter().collect::<Vec<_>>();
 
         assert_eq!(cells.len(), 12);
-        assert_eq!(
-            cells,
-            vec![
-                (
-                    (0, 0),
-                    &Cell::Filled {
-                        character: '!',
-                        foreground: fg(Green),
-                        background: bg(Red),
-                    }
-                ),
-                ((1, 0), &Cell::Empty),
-                ((0, 1), &Cell::Empty),
-                ((1, 1), &Cell::Empty),
-                ((0, 2), &Cell::Empty),
-                ((1, 2), &Cell::Empty),
-                ((0, 3), &Cell::Empty),
-                (
-                    (1, 3),
-                    &Cell::Filled {
-                        character: '1',
-                        foreground: fg(Green),
-                        background: bg(Red),
-                    }
-                ),
-                ((0, 4), &Cell::Empty),
-                ((1, 4), &Cell::Empty),
-                ((0, 5), &Cell::Empty),
-                ((1, 5), &Cell::Empty),
-            ]
-        );
+        assert_eq!(cells, vec![
+            ((0, 0), &Cell::Filled {
+                character: '!',
+                foreground: fg(Green),
+                background: bg(Red),
+            }),
+            ((1, 0), &Cell::Empty),
+            ((0, 1), &Cell::Empty),
+            ((1, 1), &Cell::Empty),
+            ((0, 2), &Cell::Empty),
+            ((1, 2), &Cell::Empty),
+            ((0, 3), &Cell::Empty),
+            ((1, 3), &Cell::Filled {
+                character: '1',
+                foreground: fg(Green),
+                background: bg(Red),
+            }),
+            ((0, 4), &Cell::Empty),
+            ((1, 4), &Cell::Empty),
+            ((0, 5), &Cell::Empty),
+            ((1, 5), &Cell::Empty),
+        ]);
     }
 
     #[test]
     fn render_to_raw_buffer() {
         let mut fb = Framebuffer::new(2, 2);
-        fb.set(
-            0,
-            0,
-            Cell::Filled {
-                character: 'X',
-                foreground: fg(Green),
-                background: bg(Red),
-            },
-        );
-        fb.set(
-            1,
-            1,
-            Cell::Filled {
-                character: 'Y',
-                foreground: fg(Green),
-                background: bg(Red),
-            },
-        );
+        fb.set(0, 0, Cell::Filled {
+            character: 'X',
+            foreground: fg(Green),
+            background: bg(Red),
+        });
+        fb.set(1, 1, Cell::Filled {
+            character: 'Y',
+            foreground: fg(Green),
+            background: bg(Red),
+        });
 
         let mut buf = String::new();
 

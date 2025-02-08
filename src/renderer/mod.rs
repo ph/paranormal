@@ -2,8 +2,8 @@ use std::io::Write;
 
 use crate::{
     framebuffer::{
-        diff::{Changeset, Changesets},
         Cell,
+        diff::{Changeset, Changesets},
     },
     terminal::{Command, Style},
 };

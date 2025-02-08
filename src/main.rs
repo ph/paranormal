@@ -3,9 +3,9 @@ mod renderer;
 mod terminal;
 mod windows;
 
-use framebuffer::{diff, Cell, Framebuffer};
+use framebuffer::{Cell, Framebuffer, diff};
 use renderer::{Renderer, Terminal};
-use terminal::{bg, fg, window_size, Color, Command, Style};
+use terminal::{Color, Command, Style, bg, fg, window_size};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let w = window_size()?;
@@ -16,33 +16,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     use Color::*;
 
-    fb_1.set(
-        2,
-        3,
-        Cell::Filled {
-            character: 'P',
-            foreground: fg(Magenta),
-            background: bg(Cyan),
-        },
-    );
-    fb_1.set(
-        2,
-        4,
-        Cell::Filled {
-            character: 'H',
-            foreground: fg(Red),
-            background: bg(Black),
-        },
-    );
-    fb_1.set(
-        2,
-        5,
-        Cell::Filled {
-            character: '!',
-            foreground: fg(White),
-            background: bg(Yellow),
-        },
-    );
+    fb_1.set(2, 3, Cell::Filled {
+        character: 'P',
+        foreground: fg(Magenta),
+        background: bg(Cyan),
+    });
+    fb_1.set(2, 4, Cell::Filled {
+        character: 'H',
+        foreground: fg(Red),
+        background: bg(Black),
+    });
+    fb_1.set(2, 5, Cell::Filled {
+        character: '!',
+        foreground: fg(White),
+        background: bg(Yellow),
+    });
 
     let changesets = diff::compare(&fb, &fb_1);
     println!("changesets:\n {:?}", changesets);
