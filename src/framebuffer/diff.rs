@@ -17,7 +17,7 @@ impl std::fmt::Display for Changeset {
     }
 }
 
-type Changesets = Vec<Changeset>;
+pub type Changesets = Vec<Changeset>;
 
 pub fn compare(a: &Framebuffer, b: &Framebuffer) -> Changesets {
     assert!(a.width() == b.width(), "width doesn't match");
@@ -30,14 +30,6 @@ pub fn compare(a: &Framebuffer, b: &Framebuffer) -> Changesets {
         .for_each(|(((x_a, y_a), cell_a), ((x_b, y_b), cell_b))| {
             assert!(x_a == x_b);
             assert!(y_a == y_b);
-
-            println!(
-                "a: {:?}, cell_a: {:?} --  b: {:?}, cell_b: {:?}",
-                (x_a, y_a),
-                (x_b, y_b),
-                cell_a,
-                cell_b
-            );
 
             use Changeset::*;
 
@@ -79,13 +71,30 @@ pub fn compare(a: &Framebuffer, b: &Framebuffer) -> Changesets {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::terminal::{bg, fg, Color::*};
 
     #[test]
     fn compare_same_framebuffer() {
         let mut fb = Framebuffer::new(2, 4);
 
-        fb.set(0, 0, Cell::Filled { character: 'H' });
-        fb.set(1, 1, Cell::Filled { character: 'P' });
+        fb.set(
+            0,
+            0,
+            Cell::Filled {
+                character: 'H',
+                foreground: fg(Red),
+                background: bg(Yellow),
+            },
+        );
+        fb.set(
+            1,
+            1,
+            Cell::Filled {
+                character: 'P',
+                foreground: fg(Red),
+                background: bg(Yellow),
+            },
+        );
 
         let diff = compare(&fb, &fb.clone());
 
@@ -97,8 +106,24 @@ mod test {
         let fb_a = Framebuffer::new(2, 2);
         let mut fb_b = Framebuffer::new(2, 2);
 
-        fb_b.set(0, 0, Cell::Filled { character: 'P' });
-        fb_b.set(0, 1, Cell::Filled { character: 'H' });
+        fb_b.set(
+            0,
+            0,
+            Cell::Filled {
+                character: 'P',
+                foreground: fg(Red),
+                background: bg(Yellow),
+            },
+        );
+        fb_b.set(
+            0,
+            1,
+            Cell::Filled {
+                character: 'H',
+                foreground: fg(Red),
+                background: bg(Yellow),
+            },
+        );
 
         let diff = compare(&fb_a, &fb_b);
 
@@ -117,12 +142,44 @@ mod test {
     #[test]
     fn compare_changed_framebuffer() {
         let mut fb_a = Framebuffer::new(2, 6);
-        fb_a.set(0, 0, Cell::Filled { character: 'P' });
-        fb_a.set(1, 1, Cell::Filled { character: 'o' }); // remove
+        fb_a.set(
+            0,
+            0,
+            Cell::Filled {
+                character: 'P',
+                foreground: fg(Red),
+                background: bg(Yellow),
+            },
+        );
+        fb_a.set(
+            1,
+            1,
+            Cell::Filled {
+                character: 'o',
+                foreground: fg(Red),
+                background: bg(Yellow),
+            },
+        ); // remove
 
         let mut fb_b = Framebuffer::new(2, 6);
-        fb_b.set(0, 0, Cell::Filled { character: '!' }); // up
-        fb_b.set(1, 3, Cell::Filled { character: '1' }); // add
+        fb_b.set(
+            0,
+            0,
+            Cell::Filled {
+                character: '!',
+                foreground: fg(Red),
+                background: bg(Yellow),
+            },
+        ); // up
+        fb_b.set(
+            1,
+            3,
+            Cell::Filled {
+                character: '1',
+                foreground: fg(Red),
+                background: bg(Yellow),
+            },
+        ); // add
 
         let diff = compare(&fb_a, &fb_b);
 
@@ -132,13 +189,21 @@ mod test {
                 Changeset::Update {
                     x: 0,
                     y: 0,
-                    cell: Cell::Filled { character: '!' }
+                    cell: Cell::Filled {
+                        character: '!',
+                        foreground: fg(Red),
+                        background: bg(Yellow),
+                    }
                 },
                 Changeset::Remove { x: 1, y: 1 },
                 Changeset::Add {
                     x: 1,
                     y: 3,
-                    cell: Cell::Filled { character: '1' }
+                    cell: Cell::Filled {
+                        character: '1',
+                        foreground: fg(Red),
+                        background: bg(Yellow),
+                    }
                 }
             ],
         );

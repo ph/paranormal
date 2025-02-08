@@ -1,6 +1,8 @@
 use std::fmt::Write;
 
-mod diff;
+use crate::terminal::Style;
+
+pub mod diff;
 
 #[derive(Debug, Clone)]
 pub enum FramebufferErr {
@@ -20,7 +22,11 @@ impl std::fmt::Display for FramebufferErr {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Cell {
     Empty,
-    Filled { character: char },
+    Filled {
+        character: char,
+        foreground: Style,
+        background: Style,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -154,7 +160,7 @@ pub fn render<W: Write>(fb: &Framebuffer, out: &mut W) -> Result<(), Framebuffer
 
         match cell {
             Cell::Empty => write!(out, " ").map_err(|e| FramebufferErr::Writing(e.to_string()))?,
-            Cell::Filled { character } => {
+            Cell::Filled { character, .. } => {
                 write!(out, "{}", character).map_err(|e| FramebufferErr::Writing(e.to_string()))?
             }
         }
@@ -170,11 +176,16 @@ pub fn render<W: Write>(fb: &Framebuffer, out: &mut W) -> Result<(), Framebuffer
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::terminal::{bg, fg, Color::*};
 
     #[test]
     fn set_and_get() {
         let mut fb = Framebuffer::new(3, 4);
-        let cell = Cell::Filled { character: 'a' };
+        let cell = Cell::Filled {
+            character: 'a',
+            foreground: fg(Green),
+            background: bg(Red),
+        };
         fb.set(1, 1, cell.clone());
         let c = fb.get(1, 1);
         assert_eq!(cell, *c);
@@ -189,7 +200,11 @@ mod test {
     #[test]
     fn clear() {
         let mut fb = Framebuffer::new(3, 4);
-        let cell = Cell::Filled { character: 'a' };
+        let cell = Cell::Filled {
+            character: 'a',
+            foreground: fg(Green),
+            background: bg(Red),
+        };
         fb.set(1, 1, cell.clone());
         let c = fb.get(1, 1);
         assert_eq!(cell, *c);
@@ -214,8 +229,17 @@ mod test {
     fn iterator() {
         let mut fb = Framebuffer::new(2, 2);
 
-        let cell_1 = Cell::Filled { character: 'X' };
-        let cell_2 = Cell::Filled { character: 'Y' };
+        let cell_1 = Cell::Filled {
+            character: 'X',
+            foreground: fg(Green),
+            background: bg(Red),
+        };
+
+        let cell_2 = Cell::Filled {
+            character: 'Y',
+            foreground: fg(Green),
+            background: bg(Red),
+        };
 
         fb.set(0, 0, cell_1.clone());
         fb.set(1, 1, cell_2.clone());
@@ -230,8 +254,24 @@ mod test {
         assert_eq!(fb.iter().collect::<Vec<_>>(), expected);
 
         let mut fb_a = Framebuffer::new(2, 6);
-        fb_a.set(0, 0, Cell::Filled { character: '!' });
-        fb_a.set(1, 3, Cell::Filled { character: '1' });
+        fb_a.set(
+            0,
+            0,
+            Cell::Filled {
+                character: '!',
+                foreground: fg(Green),
+                background: bg(Red),
+            },
+        );
+        fb_a.set(
+            1,
+            3,
+            Cell::Filled {
+                character: '1',
+                foreground: fg(Green),
+                background: bg(Red),
+            },
+        );
 
         let cells = fb_a.iter().collect::<Vec<_>>();
 
@@ -239,14 +279,28 @@ mod test {
         assert_eq!(
             cells,
             vec![
-                ((0, 0), &Cell::Filled { character: '!' }),
+                (
+                    (0, 0),
+                    &Cell::Filled {
+                        character: '!',
+                        foreground: fg(Green),
+                        background: bg(Red),
+                    }
+                ),
                 ((1, 0), &Cell::Empty),
                 ((0, 1), &Cell::Empty),
                 ((1, 1), &Cell::Empty),
                 ((0, 2), &Cell::Empty),
                 ((1, 2), &Cell::Empty),
                 ((0, 3), &Cell::Empty),
-                ((1, 3), &Cell::Filled { character: '1' }),
+                (
+                    (1, 3),
+                    &Cell::Filled {
+                        character: '1',
+                        foreground: fg(Green),
+                        background: bg(Red),
+                    }
+                ),
                 ((0, 4), &Cell::Empty),
                 ((1, 4), &Cell::Empty),
                 ((0, 5), &Cell::Empty),
@@ -258,8 +312,24 @@ mod test {
     #[test]
     fn render_to_raw_buffer() {
         let mut fb = Framebuffer::new(2, 2);
-        fb.set(0, 0, Cell::Filled { character: 'X' });
-        fb.set(1, 1, Cell::Filled { character: 'Y' });
+        fb.set(
+            0,
+            0,
+            Cell::Filled {
+                character: 'X',
+                foreground: fg(Green),
+                background: bg(Red),
+            },
+        );
+        fb.set(
+            1,
+            1,
+            Cell::Filled {
+                character: 'Y',
+                foreground: fg(Green),
+                background: bg(Red),
+            },
+        );
 
         let mut buf = String::new();
 

@@ -1,6 +1,6 @@
 use std::{
     borrow::Cow,
-    io::{Error, Stdout},
+    io::{Error, Stdout, Write},
     os::fd::{AsRawFd, IntoRawFd},
 };
 
@@ -8,7 +8,7 @@ use libc::{ioctl, winsize, TIOCGWINSZ};
 
 static TTY: &str = "/dev/tty";
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Style {
     Foreground(Color),
     Background(Color),
@@ -40,15 +40,15 @@ pub enum Visibility {
 }
 
 #[derive(Debug, Clone)]
-pub enum Command<'a> {
+pub enum Command {
     MoveTo(u16, u16),
     ApplyStyle(Style),
-    Write(&'a str),
+    Write(String),
     Cursor(Visibility),
     Clear,
 }
 
-impl std::fmt::Display for Command<'_> {
+impl std::fmt::Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Command::MoveTo(x, y) => write!(f, "\x1B[{};{}H", x, y),
@@ -63,7 +63,7 @@ impl std::fmt::Display for Command<'_> {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Color {
     Rgb { r: u8, g: u8, b: u8 },
 
@@ -136,10 +136,10 @@ impl Color {
 #[repr(C)]
 #[derive(Debug, Clone)]
 pub struct WinSize {
-    rows: u16,
-    cols: u16,
-    x_pixel: u16,
-    y_pixel: u16,
+    pub rows: u16,
+    pub cols: u16,
+    pub x_pixel: u16,
+    pub y_pixel: u16,
 }
 
 pub fn window_size() -> Result<WinSize, Error> {
@@ -157,7 +157,6 @@ pub fn window_size() -> Result<WinSize, Error> {
         }
     };
 
-    // std::io::Error::last_os_error()
     Ok(w)
 }
 
@@ -176,4 +175,21 @@ pub fn window_size_from(fd: i32) -> Result<WinSize, Error> {
     }
 
     Ok(w.into())
+}
+
+pub fn bg(c: Color) -> Style {
+    Style::Background(c)
+}
+
+pub fn fg(c: Color) -> Style {
+    Style::Foreground(c)
+}
+
+pub fn rgb(r: u8, g: u8, b: u8) -> Color {
+    Color::Rgb { r: r, g: g, b: b }
+}
+
+pub fn configure<W: Write>(out: &mut W) -> std::io::Result<()> {
+    write!(out, "{}", Command::Clear)?;
+    Ok(())
 }
