@@ -1,5 +1,4 @@
 mod framebuffer;
-mod renderer;
 mod terminal;
 
 use framebuffer::{Cell, Framebuffer};
