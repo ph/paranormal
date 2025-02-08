@@ -1,4 +1,12 @@
-use std::borrow::Cow;
+use std::{
+    borrow::Cow,
+    io::{Error, Stdout},
+    os::fd::{AsRawFd, IntoRawFd},
+};
+
+use libc::{ioctl, winsize, TIOCGWINSZ};
+
+static TTY: &str = "/dev/tty";
 
 #[derive(Debug, Clone)]
 pub enum Style {
@@ -123,4 +131,49 @@ impl Color {
             BrightWhite => Cow::Borrowed("97"),
         }
     }
+}
+
+#[repr(C)]
+#[derive(Debug, Clone)]
+pub struct WinSize {
+    rows: u16,
+    cols: u16,
+    x_pixel: u16,
+    y_pixel: u16,
+}
+
+pub fn window_size() -> Result<WinSize, Error> {
+    let fd = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(TTY)
+        .map(|f| f.into_raw_fd())?;
+
+    let w = window_size_from(fd)?;
+
+    unsafe {
+        if libc::close(fd) < 0 {
+            return Err(Error::last_os_error());
+        }
+    };
+
+    // std::io::Error::last_os_error()
+    Ok(w)
+}
+
+pub fn window_size_from(fd: i32) -> Result<WinSize, Error> {
+    let mut w = WinSize {
+        rows: 0,
+        cols: 0,
+        x_pixel: 0,
+        y_pixel: 0,
+    };
+
+    unsafe {
+        if ioctl(fd, TIOCGWINSZ, &mut w) < 0 {
+            return Err(Error::last_os_error());
+        }
+    }
+
+    Ok(w.into())
 }
