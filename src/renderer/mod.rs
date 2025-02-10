@@ -2,8 +2,8 @@ use std::io::Write;
 
 use crate::{
     framebuffer::{
-        Cell,
         diff::{Changeset, Changesets},
+        Cell,
     },
     terminal::{Command, Style},
 };
@@ -58,9 +58,9 @@ impl<T: Write> Terminal<T> {
         self.apply(&ops)
     }
 
-    fn remove(&mut self, x: u16, y: u16) {}
+    fn remove(&mut self, _x: u16, _y: u16) {}
 
-    fn update(&mut self, x: u16, y: u16, _cell: Cell) {}
+    fn update(&mut self, _x: u16, _y: u16, _cell: Cell) {}
 
     fn apply(&mut self, ops: &[Command]) {
         for op in ops {

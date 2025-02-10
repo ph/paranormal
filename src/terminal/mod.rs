@@ -1,10 +1,10 @@
 use std::{
     borrow::Cow,
-    io::{Error, Stdout, Write},
-    os::fd::{AsRawFd, IntoRawFd},
+    io::{Error, Write},
+    os::fd::IntoRawFd,
 };
 
-use libc::{TIOCGWINSZ, ioctl, winsize};
+use libc::{ioctl, TIOCGWINSZ};
 
 static TTY: &str = "/dev/tty";
 
@@ -34,12 +34,14 @@ impl std::fmt::Display for Style {
 }
 
 #[derive(Debug, Clone)]
+#[allow(unused)]
 pub enum Visibility {
     Hidden,
     Show,
 }
 
 #[derive(Debug, Clone)]
+#[allow(unused)]
 pub enum Command {
     MoveTo(u16, u16),
     ApplyStyle(Style),
@@ -55,15 +57,16 @@ impl std::fmt::Display for Command {
             Command::ApplyStyle(style) => write!(f, "{}", style),
             Command::Write(s) => write!(f, "{}", s),
             Command::Cursor(visibility) => match visibility {
-                Visibility::Hidden => write!(f, "{}", "\x1B[?25l"),
-                Visibility::Show => write!(f, "{}", "\x1B[?25h"),
+                Visibility::Hidden => write!(f, "\x1B[?25l"),
+                Visibility::Show => write!(f, "\x1B[?25h"),
             },
-            Command::Clear => write!(f, "{}", "\x1B[2J"),
+            Command::Clear => write!(f, "\x1B[2J"),
         }
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[allow(unused)]
 pub enum Color {
     Rgb { r: u8, g: u8, b: u8 },
 
@@ -174,7 +177,7 @@ pub fn window_size_from(fd: i32) -> Result<WinSize, Error> {
         }
     }
 
-    Ok(w.into())
+    Ok(w)
 }
 
 pub fn bg(c: Color) -> Style {
@@ -185,8 +188,9 @@ pub fn fg(c: Color) -> Style {
     Style::Foreground(c)
 }
 
+#[allow(unused)]
 pub fn rgb(r: u8, g: u8, b: u8) -> Color {
-    Color::Rgb { r: r, g: g, b: b }
+    Color::Rgb { r, g, b }
 }
 
 pub fn configure<W: Write>(out: &mut W) -> std::io::Result<()> {

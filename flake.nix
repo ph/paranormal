@@ -22,13 +22,10 @@
             [
               (rustVersion.override { extensions = [ "rust-src" "rustfmt" "clippy" ]; })
               pkgs.rust-analyzer
-              pkgs.protobuf
               pkgs.openssl
-              pkgs.buf
               pkgs.glibc
-              pkgs.cmake
               pkgs.pkg-config
-              pkgs.perl
+              pkgs.act
             ];
         };
       });
