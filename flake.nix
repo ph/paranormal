@@ -8,24 +8,28 @@
   };
 
   outputs = { self, nixpkgs, rust-overlay, flake-utils }:
+    # TODO: this only need to support amd64 for now.
     flake-utils.lib.eachDefaultSystem (system:
       let
         overlays = [ (import rust-overlay) ];
+
         pkgs = import nixpkgs {
           inherit system overlays;
         };
 
-	rustVersion = pkgs.rust-bin.nightly.latest.default;
+        rustVersion = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
       in {
         devShell = pkgs.mkShell {
           buildInputs =
             [
               (rustVersion.override { extensions = [ "rust-src" "rustfmt" "clippy" ]; })
               pkgs.rust-analyzer
-              pkgs.openssl
-              pkgs.glibc
-              pkgs.pkg-config
+              pkgs.cmake
+              pkgs.dosfstools
+              pkgs.mtools
+              pkgs.gh
               pkgs.act
+              pkgs.cargo-deny
             ];
         };
       });
