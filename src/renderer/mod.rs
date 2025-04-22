@@ -26,21 +26,21 @@ impl<T: Write> Terminal<T> {
 
     fn render(&mut self, change: Changeset) {
         match change {
-            Changeset::Add { x, y, cell } => self.add(x, y, cell),
+            Changeset::Add { x, y, cell } => self.update(x, y, cell),
             Changeset::Remove { x, y } => self.remove(x, y),
             Changeset::Update { x, y, cell } => self.update(x, y, cell),
         }
     }
 
-    fn add(&mut self, x: u16, y: u16, cell: Cell) {
+    fn remove(&mut self, x: u16, y: u16)  {
+	self.apply(&empty_at(x, y))
+    }
+
+    fn update(&mut self, x: u16, y: u16, cell: Cell) {
         use Command::*;
 
         let ops = match cell {
-            Cell::Empty => vec![
-                MoveTo(x, y),
-                ApplyStyle(Style::Reset),
-                Write(String::from("\0")),
-            ],
+            Cell::Empty => empty_at(x, y),
             Cell::Filled {
                 character,
                 foreground,
@@ -58,15 +58,21 @@ impl<T: Write> Terminal<T> {
         self.apply(&ops)
     }
 
-    fn remove(&mut self, _x: u16, _y: u16) {}
-
-    fn update(&mut self, _x: u16, _y: u16, _cell: Cell) {}
-
     fn apply(&mut self, ops: &[Command]) {
         for op in ops {
             write!(self.out, "{}", op).unwrap()
         }
     }
+}
+
+fn empty_at(x:  u16, y: u16) -> Vec<Command> {
+    use Command::*;
+    
+    vec![
+	MoveTo(x, y),
+	ApplyStyle(Style::Reset),
+	Write(String::from("\0")),
+    ]
 }
 
 impl<T: Write> Renderer for Terminal<T> {
