@@ -15,15 +15,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let fb = Framebuffer::new(w.cols, w.rows);
     let mut fb_1 = fb.clone();
 
-    use Color::*;
-
     fb_1.set(
         2,
         3,
         Cell::Filled {
             character: 'P',
-            foreground: fg(Magenta),
-            background: bg(Cyan),
+            foreground: fg(Color::Magenta),
+            background: bg(Color::Cyan),
         },
     );
     fb_1.set(
@@ -31,8 +29,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         4,
         Cell::Filled {
             character: 'H',
-            foreground: fg(Red),
-            background: bg(Black),
+            foreground: fg(Color::Red),
+            background: bg(Color::Black),
         },
     );
     fb_1.set(
@@ -40,8 +38,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         5,
         Cell::Filled {
             character: '!',
-            foreground: fg(White),
-            background: bg(Yellow),
+            foreground: fg(Color::White),
+            background: bg(Color::Yellow),
         },
     );
 
