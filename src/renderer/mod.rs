@@ -32,8 +32,8 @@ impl<T: Write> Terminal<T> {
         }
     }
 
-    fn remove(&mut self, x: u16, y: u16)  {
-	self.apply(&empty_at(x, y))
+    fn remove(&mut self, x: u16, y: u16) {
+        self.apply(&empty_at(x, y))
     }
 
     fn update(&mut self, x: u16, y: u16, cell: Cell) {
@@ -45,12 +45,12 @@ impl<T: Write> Terminal<T> {
                 character,
                 foreground,
                 background,
-            } => {
-		self.apply(&[MoveTo(x, y),
-			     ApplyStyle(foreground),
-			     ApplyStyle(background),
-			     Write(character.to_string())])
-            }
+            } => self.apply(&[
+                MoveTo(x, y),
+                ApplyStyle(foreground),
+                ApplyStyle(background),
+                Write(character.to_string()),
+            ]),
         };
     }
 
@@ -61,12 +61,14 @@ impl<T: Write> Terminal<T> {
     }
 }
 
-fn empty_at(x:  u16, y: u16) -> [Command; 3] {
+fn empty_at(x: u16, y: u16) -> [Command; 3] {
     use Command::*;
-    
-    [MoveTo(x, y),
-     ApplyStyle(Style::Reset),
-     Write(String::from("\0"))]
+
+    [
+        MoveTo(x, y),
+        ApplyStyle(Style::Reset),
+        Write(String::from("\0")),
+    ]
 }
 
 impl<T: Write> Renderer for Terminal<T> {

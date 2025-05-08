@@ -69,7 +69,6 @@ impl std::fmt::Display for Command {
 #[allow(unused)]
 pub enum Color {
     Rgb { r: u8, g: u8, b: u8 },
-
     Black,
     Red,
     Green,
