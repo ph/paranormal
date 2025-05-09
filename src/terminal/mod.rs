@@ -18,15 +18,15 @@ pub enum Style {
 impl std::fmt::Display for Style {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use Style::*;
+
         match self {
             Foreground(color) => match color {
                 Color::Rgb { .. } => write!(f, "\x1B[38;2{}m", color.fg()),
-                _ => write!(f, "\x1B[38;{}m", color.fg()),
+                _ => write!(f, "\x1B[{}m", color.fg()),
             },
-
             Background(color) => match color {
                 Color::Rgb { .. } => write!(f, "\x1B[48;2{}m", color.fg()),
-                _ => write!(f, "\x1B[48;{}m", color.bg()),
+                _ => write!(f, "\x1B[{}m", color.bg()),
             },
             Reset => write!(f, "\x1B[0m"),
         }
@@ -89,48 +89,46 @@ pub enum Color {
 
 impl Color {
     pub fn bg(&self) -> Cow<str> {
-        use Color::*;
         match self {
-            Rgb { r, g, b } => Cow::Owned(format!("{};{};{}", r, g, b)),
-            Black => Cow::Borrowed("40"),
-            Red => Cow::Borrowed("41"),
-            Green => Cow::Borrowed("42"),
-            Yellow => Cow::Borrowed("43"),
-            Blue => Cow::Borrowed("44"),
-            Magenta => Cow::Borrowed("45"),
-            Cyan => Cow::Borrowed("46"),
-            White => Cow::Borrowed("47"),
-            BrightBlack => Cow::Borrowed("100"),
-            BrightRed => Cow::Borrowed("101"),
-            BrightGreen => Cow::Borrowed("102"),
-            BrightYellow => Cow::Borrowed("103"),
-            BrightBlue => Cow::Borrowed("104"),
-            BrightMagenta => Cow::Borrowed("105"),
-            BrightCyan => Cow::Borrowed("106"),
-            BrightWhite => Cow::Borrowed("107"),
+            Color::Rgb { r, g, b } => Cow::Owned(format!("{};{};{}", r, g, b)),
+            Color::Black => Cow::Borrowed("40"),
+            Color::Red => Cow::Borrowed("41"),
+            Color::Green => Cow::Borrowed("42"),
+            Color::Yellow => Cow::Borrowed("43"),
+            Color::Blue => Cow::Borrowed("44"),
+            Color::Magenta => Cow::Borrowed("45"),
+            Color::Cyan => Cow::Borrowed("46"),
+            Color::White => Cow::Borrowed("47"),
+            Color::BrightBlack => Cow::Borrowed("100"),
+            Color::BrightRed => Cow::Borrowed("101"),
+            Color::BrightGreen => Cow::Borrowed("102"),
+            Color::BrightYellow => Cow::Borrowed("103"),
+            Color::BrightBlue => Cow::Borrowed("104"),
+            Color::BrightMagenta => Cow::Borrowed("105"),
+            Color::BrightCyan => Cow::Borrowed("106"),
+            Color::BrightWhite => Cow::Borrowed("107"),
         }
     }
 
     pub fn fg(&self) -> Cow<str> {
-        use Color::*;
         match self {
-            Rgb { r, g, b } => Cow::Owned(format!("{};{};{}", r, g, b)),
-            Black => Cow::Borrowed("30"),
-            Red => Cow::Borrowed("31"),
-            Green => Cow::Borrowed("32"),
-            Yellow => Cow::Borrowed("33"),
-            Blue => Cow::Borrowed("34"),
-            Magenta => Cow::Borrowed("35"),
-            Cyan => Cow::Borrowed("36"),
-            White => Cow::Borrowed("37"),
-            BrightBlack => Cow::Borrowed("90"),
-            BrightRed => Cow::Borrowed("91"),
-            BrightGreen => Cow::Borrowed("92"),
-            BrightYellow => Cow::Borrowed("93"),
-            BrightBlue => Cow::Borrowed("94"),
-            BrightMagenta => Cow::Borrowed("95"),
-            BrightCyan => Cow::Borrowed("96"),
-            BrightWhite => Cow::Borrowed("97"),
+            Color::Rgb { r, g, b } => Cow::Owned(format!("{};{};{}", r, g, b)),
+            Color::Black => Cow::Borrowed("30"),
+            Color::Red => Cow::Borrowed("31"),
+            Color::Green => Cow::Borrowed("32"),
+            Color::Yellow => Cow::Borrowed("33"),
+            Color::Blue => Cow::Borrowed("34"),
+            Color::Magenta => Cow::Borrowed("35"),
+            Color::Cyan => Cow::Borrowed("36"),
+            Color::White => Cow::Borrowed("37"),
+            Color::BrightBlack => Cow::Borrowed("90"),
+            Color::BrightRed => Cow::Borrowed("91"),
+            Color::BrightGreen => Cow::Borrowed("92"),
+            Color::BrightYellow => Cow::Borrowed("93"),
+            Color::BrightBlue => Cow::Borrowed("94"),
+            Color::BrightMagenta => Cow::Borrowed("95"),
+            Color::BrightCyan => Cow::Borrowed("96"),
+            Color::BrightWhite => Cow::Borrowed("97"),
         }
     }
 }
