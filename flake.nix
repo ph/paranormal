@@ -24,10 +24,10 @@
             [
               (rustVersion.override { extensions = [ "rust-src" "rustfmt" "clippy" ]; })
               pkgs.rust-analyzer
-              pkgs.cmake
               pkgs.dosfstools
               pkgs.mtools
               pkgs.gh
+              pkgs.just
               pkgs.act
               pkgs.cargo-deny
             ];
